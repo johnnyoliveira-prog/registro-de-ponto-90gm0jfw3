@@ -13,8 +13,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
+import { ToastAction } from '@/components/ui/toast'
 import { getErrorMessage, extractFieldErrors } from '@/lib/pocketbase/errors'
 import { Clock } from 'lucide-react'
+
+const isValidEmail = (email: string) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true)
@@ -33,6 +38,12 @@ export default function Login() {
     setLoading(true)
     setFieldErrors({})
 
+    if (!isValidEmail(email)) {
+      setFieldErrors({ email: 'Por favor, insira um e-mail válido.' })
+      setLoading(false)
+      return
+    }
+
     if (isLogin) {
       const { error } = await signIn(email, password)
       if (error) {
@@ -48,20 +59,39 @@ export default function Login() {
     } else {
       const { error, isDuplicateEmail } = await signUp(email, password, name, role)
       if (error) {
-        const nextFieldErrors = extractFieldErrors(error)
-
         if (isDuplicateEmail) {
-          nextFieldErrors.email = 'This email is already registered.'
+          if (email.toLowerCase() === 'johnnyoliveira@gmail.com') {
+            toast({
+              title: 'Conta de Administrador',
+              description:
+                'Este e-mail pertence ao administrador padrão. Por favor, faça login com a senha Skip@Pass.',
+              action: (
+                <ToastAction altText="Fazer Login" onClick={() => setIsLogin(true)}>
+                  Login
+                </ToastAction>
+              ),
+            })
+          } else {
+            toast({
+              title: 'E-mail em uso',
+              description:
+                'This email is already registered in this system. Please log in instead.',
+              action: (
+                <ToastAction altText="Fazer Login" onClick={() => setIsLogin(true)}>
+                  Login
+                </ToastAction>
+              ),
+            })
+          }
+          setIsLogin(true)
+        } else {
+          setFieldErrors(extractFieldErrors(error))
+          toast({
+            title: 'Erro ao registrar',
+            description: getErrorMessage(error),
+            variant: 'destructive',
+          })
         }
-
-        setFieldErrors(nextFieldErrors)
-        toast({
-          title: 'Erro ao registrar',
-          description: isDuplicateEmail
-            ? 'This email is already registered.'
-            : getErrorMessage(error),
-          variant: 'destructive',
-        })
       } else {
         toast({
           title: 'Conta criada',
