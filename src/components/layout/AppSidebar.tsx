@@ -22,6 +22,7 @@ export function AppSidebar() {
 
   const managerNav = [
     { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
+    { title: 'Equipe', url: '/users', icon: Users },
     { title: 'Registros', url: '/relatorios', icon: History },
     { title: 'Configurações', url: '/settings', icon: Settings },
   ]
@@ -31,7 +32,7 @@ export function AppSidebar() {
     { title: 'Meu Histórico', url: '/relatorios', icon: History },
   ]
 
-  const isAdmin = user?.role === 'ceo' || user?.role === 'hr'
+  const isAdmin = user?.role === 'ceo' || user?.role === 'hr' || user?.role === 'admin'
   const navItems = isAdmin ? managerNav : employeeNav
 
   return (

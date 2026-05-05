@@ -22,14 +22,11 @@ const isValidEmail = (email: string) => {
 }
 
 export default function Login() {
-  const [isLogin, setIsLogin] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [name, setName] = useState('')
-  const [role, setRole] = useState('employee')
   const [loading, setLoading] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
-  const { signIn, signUp } = useAuth()
+  const { signIn } = useAuth()
   const navigate = useNavigate()
   const { toast } = useToast()
 
@@ -44,61 +41,16 @@ export default function Login() {
       return
     }
 
-    if (isLogin) {
-      const { error } = await signIn(email, password)
-      if (error) {
-        setFieldErrors(extractFieldErrors(error))
-        toast({
-          title: 'Erro ao entrar',
-          description: getErrorMessage(error),
-          variant: 'destructive',
-        })
-      } else {
-        navigate('/')
-      }
+    const { error } = await signIn(email, password)
+    if (error) {
+      setFieldErrors(extractFieldErrors(error))
+      toast({
+        title: 'Erro ao entrar',
+        description: getErrorMessage(error),
+        variant: 'destructive',
+      })
     } else {
-      const { error, isDuplicateEmail } = await signUp(email, password, name, role)
-      if (error) {
-        if (isDuplicateEmail) {
-          if (email.toLowerCase() === 'johnnyoliveira@gmail.com') {
-            toast({
-              title: 'Conta de Administrador',
-              description:
-                'Este e-mail pertence ao administrador padrão. Por favor, faça login com a senha Skip@Pass.',
-              action: (
-                <ToastAction altText="Fazer Login" onClick={() => setIsLogin(true)}>
-                  Login
-                </ToastAction>
-              ),
-            })
-          } else {
-            toast({
-              title: 'E-mail em uso',
-              description:
-                'This email is already registered in this system. Please log in instead.',
-              action: (
-                <ToastAction altText="Fazer Login" onClick={() => setIsLogin(true)}>
-                  Login
-                </ToastAction>
-              ),
-            })
-          }
-          setIsLogin(true)
-        } else {
-          setFieldErrors(extractFieldErrors(error))
-          toast({
-            title: 'Erro ao registrar',
-            description: getErrorMessage(error),
-            variant: 'destructive',
-          })
-        }
-      } else {
-        toast({
-          title: 'Conta criada',
-          description: 'Sua conta foi criada com sucesso.',
-        })
-        navigate('/')
-      }
+      navigate('/')
     }
     setLoading(false)
   }
@@ -112,40 +64,11 @@ export default function Login() {
           </div>
           <CardTitle className="text-2xl font-bold text-center">GeoPonto Avançado</CardTitle>
           <CardDescription className="text-center">
-            {isLogin ? 'Entre na sua conta para continuar' : 'Crie sua conta de funcionário'}
+            Entre na sua conta para continuar
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="name">Nome completo</Label>
-                <Input
-                  id="name"
-                  required
-                  placeholder="Seu nome"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-                {fieldErrors.name && <p className="text-sm text-red-500">{fieldErrors.name}</p>}
-              </div>
-            )}
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="role">Nível de Acesso</Label>
-                <Select value={role} onValueChange={setRole} required>
-                  <SelectTrigger id="role">
-                    <SelectValue placeholder="Selecione o nível de acesso" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="employee">Funcionário</SelectItem>
-                    <SelectItem value="hr">RH</SelectItem>
-                    <SelectItem value="ceo">CEO</SelectItem>
-                  </SelectContent>
-                </Select>
-                {fieldErrors.role && <p className="text-sm text-red-500">{fieldErrors.role}</p>}
-              </div>
-            )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -172,22 +95,9 @@ export default function Login() {
               )}
             </div>
             <Button className="w-full h-11 text-base mt-2" type="submit" disabled={loading}>
-              {loading ? 'Aguarde...' : isLogin ? 'Entrar' : 'Cadastrar'}
+              {loading ? 'Aguarde...' : 'Entrar'}
             </Button>
           </form>
-
-          <div className="mt-6 text-center text-sm">
-            <button
-              onClick={() => {
-                setIsLogin(!isLogin)
-                setFieldErrors({})
-              }}
-              className="text-primary hover:underline font-medium"
-              type="button"
-            >
-              {isLogin ? 'Não tem uma conta? Cadastre-se' : 'Já tem uma conta? Entre'}
-            </button>
-          </div>
         </CardContent>
       </Card>
     </div>

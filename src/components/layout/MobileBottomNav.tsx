@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Clock, History, Map } from 'lucide-react'
+import { LayoutDashboard, Clock, History, Map, Users } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
@@ -13,6 +13,7 @@ export function MobileBottomNav() {
 
   const managerNav = [
     { title: 'Mapa', url: '/dashboard', icon: Map },
+    { title: 'Equipe', url: '/users', icon: Users },
     { title: 'Histórico', url: '/relatorios', icon: History },
   ]
 
@@ -21,7 +22,7 @@ export function MobileBottomNav() {
     { title: 'Histórico', url: '/relatorios', icon: History },
   ]
 
-  const isAdmin = user?.role === 'ceo' || user?.role === 'hr'
+  const isAdmin = user?.role === 'ceo' || user?.role === 'hr' || user?.role === 'admin'
   const navItems = isAdmin ? managerNav : employeeNav
 
   return (

@@ -13,11 +13,19 @@ import Dashboard from './pages/Dashboard'
 import Settings from './pages/Settings'
 import Relatorios from './pages/Relatorios'
 import NotFound from './pages/NotFound'
+import UsersList from './pages/users/UsersList'
+import NewUser from './pages/users/NewUser'
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth()
   if (loading) return null
   if (!user) return <Navigate to="/login" replace />
+  return <>{children}</>
+}
+
+const ManagerRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth()
+  if (user?.role === 'employee') return <Navigate to="/" replace />
   return <>{children}</>
 }
 
@@ -41,6 +49,22 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/relatorios" element={<Relatorios />} />
+            <Route
+              path="/users"
+              element={
+                <ManagerRoute>
+                  <UsersList />
+                </ManagerRoute>
+              }
+            />
+            <Route
+              path="/users/new"
+              element={
+                <ManagerRoute>
+                  <NewUser />
+                </ManagerRoute>
+              }
+            />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
