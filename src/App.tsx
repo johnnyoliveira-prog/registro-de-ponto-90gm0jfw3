@@ -15,6 +15,7 @@ import Relatorios from './pages/Relatorios'
 import NotFound from './pages/NotFound'
 import UsersList from './pages/users/UsersList'
 import NewUser from './pages/users/NewUser'
+import EditUser from './pages/users/EditUser'
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth()
@@ -62,6 +63,14 @@ const App = () => (
               element={
                 <ManagerRoute>
                   <NewUser />
+                </ManagerRoute>
+              }
+            />
+            <Route
+              path="/users/:id/edit"
+              element={
+                <ManagerRoute>
+                  <EditUser />
                 </ManagerRoute>
               }
             />

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { FileDown, AlertTriangle } from 'lucide-react'
+import { FileDown, AlertTriangle, Trash2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -16,14 +16,18 @@ import { getSettings, Settings } from '@/services/settings'
 import { isOutsideGeofence } from '@/lib/geofence'
 import { useAuth } from '@/hooks/use-auth'
 import { useRealtime } from '@/hooks/use-realtime'
+import pb from '@/lib/pocketbase/client'
+import { useToast } from '@/hooks/use-toast'
 
 export default function Relatorios() {
   const { user } = useAuth()
   const [entries, setEntries] = useState<TimeEntry[]>([])
   const [settings, setSettings] = useState<Settings | null>(null)
   const [loading, setLoading] = useState(true)
+  const { toast } = useToast()
 
-  const isAdmin = user?.role === 'ceo' || user?.role === 'hr'
+  const isAdmin =
+    user?.role === 'ceo' || user?.role === 'hr' || user?.role === 'coo' || user?.role === 'admin'
 
   const loadData = async () => {
     try {
@@ -72,6 +76,17 @@ export default function Relatorios() {
     document.body.removeChild(link)
   }
 
+  const handleDeleteEntry = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este registro de ponto?')) return
+    try {
+      await pb.collection('time_entries').delete(id)
+      toast({ title: 'Registro excluído com sucesso.' })
+      loadData()
+    } catch (err) {
+      toast({ title: 'Erro ao excluir registro.', variant: 'destructive' })
+    }
+  }
+
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto flex flex-col gap-6 animate-fade-in-up">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -99,6 +114,7 @@ export default function Relatorios() {
                 {isAdmin && <TableHead>Colaborador</TableHead>}
                 <TableHead>Tipo</TableHead>
                 <TableHead>Localização</TableHead>
+                {isAdmin && <TableHead className="w-[80px]"></TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -150,6 +166,17 @@ export default function Relatorios() {
                       )}
                     </div>
                   </TableCell>
+                  {isAdmin && (
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteEntry(entry.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-600" />
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

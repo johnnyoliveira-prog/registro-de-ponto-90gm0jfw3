@@ -32,7 +32,8 @@ export function AppSidebar() {
     { title: 'Meu Histórico', url: '/relatorios', icon: History },
   ]
 
-  const isAdmin = user?.role === 'ceo' || user?.role === 'hr' || user?.role === 'admin'
+  const isAdmin =
+    user?.role === 'ceo' || user?.role === 'hr' || user?.role === 'admin' || user?.role === 'coo'
   const navItems = isAdmin ? managerNav : employeeNav
 
   return (

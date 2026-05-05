@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-05-05T14:30:19.411Z",
+  "generatedAt": "2026-05-05T14:39:04.111Z",
   "collections": [
     {
       "name": "users",
       "type": "auth",
       "apiRules": {
-        "list": "id = @request.auth.id",
-        "view": "id = @request.auth.id",
-        "create": "@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin'",
-        "update": "id = @request.auth.id",
-        "delete": "id = @request.auth.id"
+        "list": "id = @request.auth.id || @request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin' || @request.auth.role = 'coo'",
+        "view": "id = @request.auth.id || @request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin' || @request.auth.role = 'coo'",
+        "create": "@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin' || @request.auth.role = 'coo'",
+        "update": "id = @request.auth.id || @request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin' || @request.auth.role = 'coo'",
+        "delete": "id = @request.auth.id || @request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin' || @request.auth.role = 'coo'"
       },
       "fields": [
         {
@@ -43,7 +43,7 @@
           "type": "select",
           "required": true,
           "system": false,
-          "selectValues": ["employee", "hr", "ceo", "admin"]
+          "selectValues": ["employee", "hr", "ceo", "admin", "coo"]
         }
       ],
       "indexes": [
@@ -55,11 +55,11 @@
       "name": "time_entries",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != '' && (employee = @request.auth.id || @request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin')",
-        "view": "@request.auth.id != '' && (employee = @request.auth.id || @request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin')",
+        "list": "@request.auth.id != '' && (employee = @request.auth.id || @request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin' || @request.auth.role = 'coo')",
+        "view": "@request.auth.id != '' && (employee = @request.auth.id || @request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin' || @request.auth.role = 'coo')",
         "create": "@request.auth.id != ''",
-        "update": "@request.auth.id != '' && (@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin')",
-        "delete": "@request.auth.id != '' && (@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin')"
+        "update": "@request.auth.id != '' && (@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin' || @request.auth.role = 'coo')",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin' || @request.auth.role = 'coo')"
       },
       "fields": [
         {
@@ -115,11 +115,11 @@
       "name": "tracking_logs",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != '' && (employee = @request.auth.id || @request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin')",
-        "view": "@request.auth.id != '' && (employee = @request.auth.id || @request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin')",
+        "list": "@request.auth.id != '' && (employee = @request.auth.id || @request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin' || @request.auth.role = 'coo')",
+        "view": "@request.auth.id != '' && (employee = @request.auth.id || @request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin' || @request.auth.role = 'coo')",
         "create": "@request.auth.id != ''",
-        "update": "@request.auth.id != '' && (@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin')",
-        "delete": "@request.auth.id != '' && (@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin')"
+        "update": "@request.auth.id != '' && (@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin' || @request.auth.role = 'coo')",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin' || @request.auth.role = 'coo')"
       },
       "fields": [
         {
@@ -164,9 +164,9 @@
       "apiRules": {
         "list": "@request.auth.id != ''",
         "view": "@request.auth.id != ''",
-        "create": "@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin'",
-        "update": "@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin'",
-        "delete": "@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin'"
+        "create": "@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin' || @request.auth.role = 'coo'",
+        "update": "@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin' || @request.auth.role = 'coo'",
+        "delete": "@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin' || @request.auth.role = 'coo'"
       },
       "fields": [
         {
