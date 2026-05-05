@@ -5,8 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
-import { getErrorMessage } from '@/lib/pocketbase/errors'
+import { getErrorMessage, extractFieldErrors } from '@/lib/pocketbase/errors'
 import { Clock } from 'lucide-react'
 
 export default function Login() {
@@ -14,7 +21,9 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
+  const [role, setRole] = useState('employee')
   const [loading, setLoading] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const { signIn, signUp } = useAuth()
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -22,10 +31,12 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setFieldErrors({})
 
     if (isLogin) {
       const { error } = await signIn(email, password)
       if (error) {
+        setFieldErrors(extractFieldErrors(error))
         toast({
           title: 'Erro ao entrar',
           description: getErrorMessage(error),
@@ -35,14 +46,19 @@ export default function Login() {
         navigate('/')
       }
     } else {
-      const { error } = await signUp(email, password, name)
+      const { error } = await signUp(email, password, name, role)
       if (error) {
+        setFieldErrors(extractFieldErrors(error))
         toast({
           title: 'Erro ao registrar',
           description: getErrorMessage(error),
           variant: 'destructive',
         })
       } else {
+        toast({
+          title: 'Conta criada',
+          description: 'Sua conta foi criada com sucesso.',
+        })
         navigate('/')
       }
     }
@@ -73,6 +89,23 @@ export default function Login() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
+                {fieldErrors.name && <p className="text-sm text-red-500">{fieldErrors.name}</p>}
+              </div>
+            )}
+            {!isLogin && (
+              <div className="space-y-2">
+                <Label htmlFor="role">Nível de Acesso</Label>
+                <Select value={role} onValueChange={setRole} required>
+                  <SelectTrigger id="role">
+                    <SelectValue placeholder="Selecione o nível de acesso" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="employee">Funcionário</SelectItem>
+                    <SelectItem value="hr">RH</SelectItem>
+                    <SelectItem value="ceo">CEO</SelectItem>
+                  </SelectContent>
+                </Select>
+                {fieldErrors.role && <p className="text-sm text-red-500">{fieldErrors.role}</p>}
               </div>
             )}
             <div className="space-y-2">
@@ -85,6 +118,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
+              {fieldErrors.email && <p className="text-sm text-red-500">{fieldErrors.email}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
@@ -95,6 +129,9 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              {fieldErrors.password && (
+                <p className="text-sm text-red-500">{fieldErrors.password}</p>
+              )}
             </div>
             <Button className="w-full h-11 text-base mt-2" type="submit" disabled={loading}>
               {loading ? 'Aguarde...' : isLogin ? 'Entrar' : 'Cadastrar'}
@@ -103,7 +140,10 @@ export default function Login() {
 
           <div className="mt-6 text-center text-sm">
             <button
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => {
+                setIsLogin(!isLogin)
+                setFieldErrors({})
+              }}
               className="text-primary hover:underline font-medium"
               type="button"
             >
