@@ -1,12 +1,12 @@
 import { Link, useLocation } from 'react-router-dom'
 import { LayoutDashboard, Clock, History, Map } from 'lucide-react'
-import { useAppContext } from '@/hooks/use-app-context'
+import { useAuth } from '@/hooks/use-auth'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 
 export function MobileBottomNav() {
   const location = useLocation()
-  const { role } = useAppContext()
+  const { user } = useAuth()
   const isMobile = useIsMobile()
 
   if (!isMobile) return null
@@ -23,7 +23,7 @@ export function MobileBottomNav() {
     { title: 'Histórico', url: '/relatorios', icon: History },
   ]
 
-  const navItems = role === 'manager' ? managerNav : employeeNav
+  const navItems = user?.role === 'admin' ? managerNav : employeeNav
 
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-white border-t border-border flex items-center justify-around px-2 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] pb-safe">

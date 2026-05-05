@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Bell, User } from 'lucide-react'
-import { useAppContext } from '@/hooks/use-app-context'
+import { useAuth } from '@/hooks/use-auth'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 export function AppHeader({ title }: { title: string }) {
-  const { role, setRole, userName } = useAppContext()
+  const { user, signOut } = useAuth()
   const [time, setTime] = useState(new Date())
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export function AppHeader({ title }: { title: string }) {
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
               <Avatar className="h-10 w-10 border-2 border-emerald-500">
                 <AvatarImage
-                  src={`https://img.usecurling.com/ppl/thumbnail?seed=${role === 'manager' ? 5 : 2}`}
+                  src={`https://img.usecurling.com/ppl/thumbnail?seed=${user?.role === 'admin' ? 5 : 2}`}
                 />
                 <AvatarFallback>
                   <User className="h-4 w-4" />
@@ -56,20 +56,17 @@ export function AppHeader({ title }: { title: string }) {
           <DropdownMenuContent align="end">
             <div className="flex items-center justify-start gap-2 p-2">
               <div className="flex flex-col space-y-1 leading-none">
-                <p className="font-medium">{userName}</p>
+                <p className="font-medium">{user?.name}</p>
                 <p className="w-[200px] truncate text-sm text-muted-foreground">
-                  {role === 'manager' ? 'Administrador' : 'Agente de Campo'}
+                  {user?.role === 'admin' ? 'Administrador' : 'Agente de Campo'}
                 </p>
               </div>
             </div>
             <div className="px-2 py-1">
               <hr />
             </div>
-            <DropdownMenuItem onClick={() => setRole('manager')} className="cursor-pointer">
-              Visualizar como Gerente
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setRole('employee')} className="cursor-pointer">
-              Visualizar como Funcionário
+            <DropdownMenuItem onClick={signOut} className="cursor-pointer text-red-600">
+              Sair
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { Map, Clock, Users, Settings, LayoutDashboard, History } from 'lucide-react'
-import { useAppContext } from '@/hooks/use-app-context'
+import { useAuth } from '@/hooks/use-auth'
 import {
   Sidebar,
   SidebarContent,
@@ -15,7 +15,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 
 export function AppSidebar() {
   const location = useLocation()
-  const { role } = useAppContext()
+  const { user } = useAuth()
   const isMobile = useIsMobile()
 
   if (isMobile) return null
@@ -34,7 +34,7 @@ export function AppSidebar() {
     { title: 'Meu Histórico', url: '/relatorios', icon: History },
   ]
 
-  const navItems = role === 'manager' ? managerNav : employeeNav
+  const navItems = user?.role === 'admin' ? managerNav : employeeNav
 
   return (
     <Sidebar className="border-r border-sidebar-border shadow-sm">
