@@ -46,12 +46,20 @@ export default function Login() {
         navigate('/')
       }
     } else {
-      const { error } = await signUp(email, password, name, role)
+      const { error, isDuplicateEmail } = await signUp(email, password, name, role)
       if (error) {
-        setFieldErrors(extractFieldErrors(error))
+        const nextFieldErrors = extractFieldErrors(error)
+
+        if (isDuplicateEmail) {
+          nextFieldErrors.email = 'This email is already registered.'
+        }
+
+        setFieldErrors(nextFieldErrors)
         toast({
           title: 'Erro ao registrar',
-          description: getErrorMessage(error),
+          description: isDuplicateEmail
+            ? 'This email is already registered.'
+            : getErrorMessage(error),
           variant: 'destructive',
         })
       } else {

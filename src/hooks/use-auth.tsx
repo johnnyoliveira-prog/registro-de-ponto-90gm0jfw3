@@ -3,7 +3,12 @@ import pb from '@/lib/pocketbase/client'
 
 interface AuthContextType {
   user: any
-  signUp: (email: string, password: string, name: string, role: string) => Promise<{ error: any }>
+  signUp: (
+    email: string,
+    password: string,
+    name: string,
+    role: string,
+  ) => Promise<{ error: any; isDuplicateEmail?: boolean }>
   signIn: (email: string, password: string) => Promise<{ error: any }>
   signOut: () => void
   loading: boolean
@@ -38,8 +43,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .create({ email, password, passwordConfirm: password, name, role })
       await pb.collection('users').authWithPassword(email, password)
       return { error: null }
-    } catch (error) {
-      return { error }
+    } catch (error: any) {
+      const isDuplicateEmail =
+        error?.status === 400 && error?.response?.data?.email?.code === 'validation_not_unique'
+
+      return { error, isDuplicateEmail }
     }
   }
 
