@@ -1,0 +1,21 @@
+{
+  "short_name": "GeoPonto",
+  "name": "Registro de Ponto Avançado",
+  "description": "Sistema de registro de ponto e monitoramento de equipe.",
+  "icons": [
+    {
+      "src": "https://img.usecurling.com/i?q=clock&color=blue&shape=fill",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://img.usecurling.com/i?q=clock&color=blue&shape=fill",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#0f172a",
+  "background_color": "#ffffff"
+}

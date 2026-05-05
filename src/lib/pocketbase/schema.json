@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-05T12:56:53.262Z",
+  "generatedAt": "2026-05-05T13:15:27.453Z",
   "collections": [
     {
       "name": "users",
@@ -43,7 +43,7 @@
           "type": "select",
           "required": true,
           "system": false,
-          "selectValues": ["employee", "admin"]
+          "selectValues": ["employee", "hr", "ceo", "admin"]
         }
       ],
       "indexes": [
@@ -55,11 +55,11 @@
       "name": "time_entries",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != '' && (employee = @request.auth.id || @request.auth.role = 'admin')",
-        "view": "@request.auth.id != '' && (employee = @request.auth.id || @request.auth.role = 'admin')",
+        "list": "@request.auth.id != '' && (employee = @request.auth.id || @request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin')",
+        "view": "@request.auth.id != '' && (employee = @request.auth.id || @request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin')",
         "create": "@request.auth.id != ''",
-        "update": "@request.auth.id != '' && @request.auth.role = 'admin'",
-        "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
+        "update": "@request.auth.id != '' && (@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin')",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin')"
       },
       "fields": [
         {
@@ -115,11 +115,11 @@
       "name": "tracking_logs",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != '' && (employee = @request.auth.id || @request.auth.role = 'admin')",
-        "view": "@request.auth.id != '' && (employee = @request.auth.id || @request.auth.role = 'admin')",
+        "list": "@request.auth.id != '' && (employee = @request.auth.id || @request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin')",
+        "view": "@request.auth.id != '' && (employee = @request.auth.id || @request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin')",
         "create": "@request.auth.id != ''",
-        "update": "@request.auth.id != '' && @request.auth.role = 'admin'",
-        "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
+        "update": "@request.auth.id != '' && (@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin')",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin')"
       },
       "fields": [
         {
@@ -137,6 +137,52 @@
         },
         {
           "name": "longitude",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "settings",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin'",
+        "update": "@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin'",
+        "delete": "@request.auth.role = 'hr' || @request.auth.role = 'ceo' || @request.auth.role = 'admin'"
+      },
+      "fields": [
+        {
+          "name": "base_latitude",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "base_longitude",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "radius_meters",
           "type": "number",
           "required": true,
           "system": false

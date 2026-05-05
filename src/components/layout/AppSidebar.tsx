@@ -21,20 +21,18 @@ export function AppSidebar() {
   if (isMobile) return null
 
   const managerNav = [
-    { title: 'Dashboard', url: '/', icon: LayoutDashboard },
-    { title: 'Monitoramento', url: '/monitoramento', icon: Map },
+    { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
     { title: 'Registros', url: '/relatorios', icon: History },
-    { title: 'Equipe', url: '#', icon: Users },
-    { title: 'Configurações', url: '#', icon: Settings },
+    { title: 'Configurações', url: '/settings', icon: Settings },
   ]
 
   const employeeNav = [
-    { title: 'Início', url: '/', icon: LayoutDashboard },
-    { title: 'Bater Ponto', url: '/registro', icon: Clock },
+    { title: 'Bater Ponto', url: '/clock-in', icon: Clock },
     { title: 'Meu Histórico', url: '/relatorios', icon: History },
   ]
 
-  const navItems = user?.role === 'admin' ? managerNav : employeeNav
+  const isAdmin = user?.role === 'ceo' || user?.role === 'hr'
+  const navItems = isAdmin ? managerNav : employeeNav
 
   return (
     <Sidebar className="border-r border-sidebar-border shadow-sm">

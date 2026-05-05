@@ -12,18 +12,17 @@ export function MobileBottomNav() {
   if (!isMobile) return null
 
   const managerNav = [
-    { title: 'Início', url: '/', icon: LayoutDashboard },
-    { title: 'Mapa', url: '/monitoramento', icon: Map },
+    { title: 'Mapa', url: '/dashboard', icon: Map },
     { title: 'Histórico', url: '/relatorios', icon: History },
   ]
 
   const employeeNav = [
-    { title: 'Início', url: '/', icon: LayoutDashboard },
-    { title: 'Ponto', url: '/registro', icon: Clock },
+    { title: 'Ponto', url: '/clock-in', icon: Clock },
     { title: 'Histórico', url: '/relatorios', icon: History },
   ]
 
-  const navItems = user?.role === 'admin' ? managerNav : employeeNav
+  const isAdmin = user?.role === 'ceo' || user?.role === 'hr'
+  const navItems = isAdmin ? managerNav : employeeNav
 
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-white border-t border-border flex items-center justify-around px-2 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] pb-safe">

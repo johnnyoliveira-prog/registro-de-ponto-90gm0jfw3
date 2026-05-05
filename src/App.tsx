@@ -9,7 +9,8 @@ import { Navigate } from 'react-router-dom'
 import Index from './pages/Index'
 import Login from './pages/Login'
 import RegistroPonto from './pages/RegistroPonto'
-import Monitoramento from './pages/Monitoramento'
+import Dashboard from './pages/Dashboard'
+import Settings from './pages/Settings'
 import Relatorios from './pages/Relatorios'
 import NotFound from './pages/NotFound'
 
@@ -36,8 +37,9 @@ const App = () => (
             }
           >
             <Route path="/" element={<Index />} />
-            <Route path="/registro" element={<RegistroPonto />} />
-            <Route path="/monitoramento" element={<Monitoramento />} />
+            <Route path="/clock-in" element={<RegistroPonto />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/relatorios" element={<Relatorios />} />
           </Route>
           <Route path="*" element={<NotFound />} />

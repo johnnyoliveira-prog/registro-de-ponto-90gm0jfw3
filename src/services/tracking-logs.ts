@@ -8,19 +8,14 @@ export interface TrackingLog {
   created: string
   expand?: {
     employee?: {
-      id: string
       name: string
+      email: string
     }
   }
 }
 
-export const getTrackingLogs = (filter?: string) =>
-  pb
-    .collection('tracking_logs')
-    .getFullList<TrackingLog>({ sort: 'created', expand: 'employee', filter })
+export const createTrackingLog = (data: Partial<TrackingLog>) =>
+  pb.collection('tracking_logs').create<TrackingLog>(data)
 
-export const createTrackingLog = (data: {
-  employee: string
-  latitude: number
-  longitude: number
-}) => pb.collection('tracking_logs').create<TrackingLog>(data)
+export const getTrackingLogs = () =>
+  pb.collection('tracking_logs').getFullList<TrackingLog>({ expand: 'employee', sort: '-created' })

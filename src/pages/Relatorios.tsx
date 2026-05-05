@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { FileDown } from 'lucide-react'
+import { FileDown, AlertTriangle } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   Table,
   TableBody,
@@ -10,26 +11,38 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { getTimeEntries, TimeEntry } from '@/services/time-entries'
+import { getTimeEntries, getMyTimeEntries, TimeEntry } from '@/services/time-entries'
+import { getSettings, Settings } from '@/services/settings'
+import { isOutsideGeofence } from '@/lib/geofence'
 import { useAuth } from '@/hooks/use-auth'
+import { useRealtime } from '@/hooks/use-realtime'
 
 export default function Relatorios() {
   const { user } = useAuth()
   const [entries, setEntries] = useState<TimeEntry[]>([])
+  const [settings, setSettings] = useState<Settings | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await getTimeEntries()
-        setEntries(data)
-      } catch {
-        /* intentionally ignored */
-      }
-      setLoading(false)
+  const isAdmin = user?.role === 'ceo' || user?.role === 'hr'
+
+  const loadData = async () => {
+    try {
+      const s = await getSettings()
+      setSettings(s)
+
+      const data = isAdmin ? await getTimeEntries() : await getMyTimeEntries()
+      setEntries(data)
+    } catch {
+      /* intentionally ignored */
     }
-    load()
-  }, [])
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [isAdmin])
+
+  useRealtime('time_entries', () => loadData())
 
   const exportCSV = () => {
     if (entries.length === 0) return
@@ -83,7 +96,7 @@ export default function Relatorios() {
             <TableHeader>
               <TableRow className="bg-slate-50">
                 <TableHead>Data / Hora</TableHead>
-                {user?.role === 'admin' && <TableHead>Colaborador</TableHead>}
+                {isAdmin && <TableHead>Colaborador</TableHead>}
                 <TableHead>Tipo</TableHead>
                 <TableHead>Localização</TableHead>
               </TableRow>
@@ -108,7 +121,7 @@ export default function Relatorios() {
                   <TableCell className="font-medium">
                     {new Date(entry.created).toLocaleString('pt-BR')}
                   </TableCell>
-                  {user?.role === 'admin' && (
+                  {isAdmin && (
                     <TableCell>{entry.expand?.employee?.name || 'Desconhecido'}</TableCell>
                   )}
                   <TableCell>
@@ -119,7 +132,23 @@ export default function Relatorios() {
                     )}
                   </TableCell>
                   <TableCell className="text-xs text-slate-500">
-                    {entry.latitude.toFixed(4)}, {entry.longitude.toFixed(4)}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span>
+                        {entry.latitude.toFixed(4)}, {entry.longitude.toFixed(4)}
+                      </span>
+                      {isOutsideGeofence(
+                        entry.latitude,
+                        entry.longitude,
+                        settings?.base_latitude,
+                        settings?.base_longitude,
+                        settings?.radius_meters,
+                      ) && (
+                        <Badge variant="destructive" className="text-[10px] gap-1 px-1.5 py-0">
+                          <AlertTriangle className="h-3 w-3" />
+                          Fora do Perímetro
+                        </Badge>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
