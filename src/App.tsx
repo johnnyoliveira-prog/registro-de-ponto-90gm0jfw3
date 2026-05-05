@@ -8,6 +8,7 @@ import { Navigate } from 'react-router-dom'
 
 import Index from './pages/Index'
 import Login from './pages/Login'
+import Register from './pages/Register'
 import RegistroPonto from './pages/RegistroPonto'
 import Dashboard from './pages/Dashboard'
 import Settings from './pages/Settings'
@@ -38,6 +39,7 @@ const App = () => (
         <Sonner />
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route
             element={
               <ProtectedRoute>

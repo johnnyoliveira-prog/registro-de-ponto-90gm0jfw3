@@ -1,32 +1,25 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
-import { ToastAction } from '@/components/ui/toast'
 import { getErrorMessage, extractFieldErrors } from '@/lib/pocketbase/errors'
-import { Clock } from 'lucide-react'
+import { UserPlus } from 'lucide-react'
 
 const isValidEmail = (email: string) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
-export default function Login() {
+export default function Register() {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
-  const { signIn } = useAuth()
+  const { signUp } = useAuth()
   const navigate = useNavigate()
   const { toast } = useToast()
 
@@ -41,15 +34,25 @@ export default function Login() {
       return
     }
 
-    const { error } = await signIn(email, password)
+    if (password.length < 8) {
+      setFieldErrors({ password: 'A senha deve ter pelo menos 8 caracteres.' })
+      setLoading(false)
+      return
+    }
+
+    const { error } = await signUp(email, password, { name, role: 'employee' })
     if (error) {
       setFieldErrors(extractFieldErrors(error))
       toast({
-        title: 'Erro ao entrar',
+        title: 'Erro ao cadastrar',
         description: getErrorMessage(error),
         variant: 'destructive',
       })
     } else {
+      toast({
+        title: 'Cadastro realizado',
+        description: 'Sua conta foi criada com sucesso.',
+      })
       navigate('/')
     }
     setLoading(false)
@@ -60,15 +63,26 @@ export default function Login() {
       <Card className="w-full max-w-md shadow-xl border-0">
         <CardHeader className="space-y-3 pb-6 flex flex-col items-center">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-            <Clock className="h-8 w-8 text-primary" />
+            <UserPlus className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold text-center">GeoPonto Avançado</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Criar Conta</CardTitle>
           <CardDescription className="text-center">
-            Entre na sua conta para continuar
+            Cadastre-se para acessar o sistema
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nome (opcional)</Label>
+              <Input
+                id="name"
+                placeholder="Seu nome completo"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+              {fieldErrors.name && <p className="text-sm text-red-500">{fieldErrors.name}</p>}
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -81,12 +95,14 @@ export default function Login() {
               />
               {fieldErrors.email && <p className="text-sm text-red-500">{fieldErrors.email}</p>}
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
               <Input
                 id="password"
                 type="password"
                 required
+                placeholder="Mínimo de 8 caracteres"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -94,20 +110,17 @@ export default function Login() {
                 <p className="text-sm text-red-500">{fieldErrors.password}</p>
               )}
             </div>
+
             <Button className="w-full h-11 text-base mt-2" type="submit" disabled={loading}>
-              {loading ? 'Aguarde...' : 'Entrar'}
+              {loading ? 'Aguarde...' : 'Cadastrar'}
             </Button>
           </form>
 
           <div className="mt-6 text-center text-sm text-slate-500">
-            Não tem uma conta?{' '}
-            <Button
-              variant="link"
-              className="p-0 h-auto font-semibold"
-              onClick={() => navigate('/register')}
-            >
-              Cadastre-se
-            </Button>
+            Já tem uma conta?{' '}
+            <Link to="/login" className="font-semibold text-primary hover:underline">
+              Fazer login
+            </Link>
           </div>
         </CardContent>
       </Card>
