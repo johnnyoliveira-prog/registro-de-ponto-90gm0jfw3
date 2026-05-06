@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   getSettings,
   updateSettings,
@@ -10,41 +12,86 @@ import {
   Settings as ISettings,
 } from '@/services/settings'
 import { useToast } from '@/hooks/use-toast'
-import { MapPin, Save } from 'lucide-react'
+import { MapPin, Save, ShieldAlert } from 'lucide-react'
+import { useAuth } from '@/hooks/use-auth'
+import { useRealtime } from '@/hooks/use-realtime'
+import { getErrorMessage } from '@/lib/pocketbase/errors'
 
 export default function Settings() {
-  const [settings, setSettings] = useState<ISettings | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState({ lat: '', lng: '', radius: '' })
+  const { user } = useAuth()
   const { toast } = useToast()
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await getSettings()
-        if (data) {
-          setSettings(data)
-          setFormData({
-            lat: data.base_latitude.toString(),
-            lng: data.base_longitude.toString(),
-            radius: data.radius_meters.toString(),
-          })
-        }
-      } catch {
-        /* ignore */
+  const [settings, setSettings] = useState<ISettings | null>(null)
+  const [initialLoading, setInitialLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+
+  const [formData, setFormData] = useState({
+    lat: '',
+    lng: '',
+    radius: '',
+  })
+
+  // User role check
+  const isEmployee = user?.role === 'employee'
+
+  const load = useCallback(async () => {
+    try {
+      const data = await getSettings()
+      if (data) {
+        setSettings(data)
+        setFormData({
+          lat: data.base_latitude.toString(),
+          lng: data.base_longitude.toString(),
+          radius: data.radius_meters.toString(),
+        })
       }
+    } catch (err) {
+      console.error('Failed to load settings:', err)
+    } finally {
+      setInitialLoading(false)
     }
-    load()
   }, [])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  // Real-time synchronization
+  useRealtime('settings', () => {
+    load()
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
+
+    if (isEmployee) {
+      toast({
+        title: 'Acesso Negado',
+        description: 'Você não tem permissão para alterar as configurações.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const lat = parseFloat(formData.lat)
+    const lng = parseFloat(formData.lng)
+    const radius = parseFloat(formData.radius)
+
+    if (isNaN(lat) || isNaN(lng) || isNaN(radius)) {
+      toast({
+        title: 'Erro de Validação',
+        description: 'Por favor, insira valores numéricos válidos em todos os campos.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setSaving(true)
     try {
       const payload = {
-        base_latitude: parseFloat(formData.lat),
-        base_longitude: parseFloat(formData.lng),
-        radius_meters: parseFloat(formData.radius),
+        base_latitude: lat,
+        base_longitude: lng,
+        radius_meters: radius,
       }
 
       if (settings) {
@@ -56,18 +103,40 @@ export default function Settings() {
 
       toast({
         title: 'Sucesso',
-        description: 'Configurações de geofencing salvas.',
+        description: 'Configurações de geofencing atualizadas com sucesso!',
       })
     } catch (err) {
       toast({
-        title: 'Erro',
-        description: 'Não foi possível salvar as configurações.',
+        title: 'Erro ao salvar configurações',
+        description: getErrorMessage(err),
         variant: 'destructive',
       })
     } finally {
-      setLoading(false)
+      setSaving(false)
     }
   }
+
+  if (initialLoading) {
+    return (
+      <div className="p-4 md:p-8 max-w-2xl mx-auto flex flex-col gap-6 animate-fade-in-up">
+        <div>
+          <Skeleton className="h-8 w-48 mb-2" />
+          <Skeleton className="h-4 w-96" />
+        </div>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-48 mb-2" />
+            <Skeleton className="h-4 w-full" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-64 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  const isFormDisabled = isEmployee || saving
 
   return (
     <div className="p-4 md:p-8 max-w-2xl mx-auto flex flex-col gap-6 animate-fade-in-up">
@@ -76,6 +145,16 @@ export default function Settings() {
         <p className="text-muted-foreground">Gerencie os parâmetros de Geofencing e sistema.</p>
       </div>
 
+      {isEmployee && (
+        <Alert className="bg-muted border-slate-200">
+          <ShieldAlert className="h-4 w-4" />
+          <AlertTitle>Acesso Restrito</AlertTitle>
+          <AlertDescription>
+            Você tem permissão apenas de visualização para as configurações do sistema.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -83,47 +162,57 @@ export default function Settings() {
             <CardTitle>Geofencing (Cerca Virtual)</CardTitle>
           </div>
           <CardDescription>
-            Defina a localização central do escritório e o raio de tolerância para alertas.
+            Defina a localização central da empresa e o raio de tolerância para alertas de ponto.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Latitude Base</Label>
+                <Label htmlFor="lat">Latitude Base</Label>
                 <Input
+                  id="lat"
                   type="number"
                   step="any"
                   value={formData.lat}
                   onChange={(e) => setFormData((p) => ({ ...p, lat: e.target.value }))}
+                  disabled={isFormDisabled}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label>Longitude Base</Label>
+                <Label htmlFor="lng">Longitude Base</Label>
                 <Input
+                  id="lng"
                   type="number"
                   step="any"
                   value={formData.lng}
                   onChange={(e) => setFormData((p) => ({ ...p, lng: e.target.value }))}
+                  disabled={isFormDisabled}
                   required
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <Label>Raio Permitido (em metros)</Label>
+                <Label htmlFor="radius">Raio Permitido (em metros)</Label>
                 <Input
+                  id="radius"
                   type="number"
+                  step="any"
+                  min="0"
                   value={formData.radius}
                   onChange={(e) => setFormData((p) => ({ ...p, radius: e.target.value }))}
+                  disabled={isFormDisabled}
                   required
                 />
               </div>
             </div>
 
-            <Button type="submit" disabled={loading} className="w-full mt-4">
-              <Save className="h-4 w-4 mr-2" />
-              {loading ? 'Salvando...' : 'Salvar Configurações'}
-            </Button>
+            {!isEmployee && (
+              <Button type="submit" disabled={saving} className="w-full mt-4">
+                <Save className="h-4 w-4 mr-2" />
+                {saving ? 'Salvando...' : 'Salvar Configurações'}
+              </Button>
+            )}
           </form>
         </CardContent>
       </Card>
